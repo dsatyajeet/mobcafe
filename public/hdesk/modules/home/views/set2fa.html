@@ -1,0 +1,107 @@
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-12">
+            <h3 class="page-header">Two Factor Authentication</h3>
+        </div>
+        <!-- /.col-lg-12 -->
+    </div>
+    <div class="row">
+        <div class="col-lg-9">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    Details
+                </div>
+                <div class="panel-body">
+                    <div id="msgBody" ng-if="MessagePoint.flag==true">
+                        <div class="alert alert-{{MessagePoint.cssType}} alert-dismissable">
+                            <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
+                            {{MessagePoint.message}}
+                        </div>
+                        </div>
+                    <div ng-if="!resData.active2fa">
+
+                    <div>
+                        <div>
+                        Scan QR Image:<img ng-src="{{resData.envUrl}}/users/qrCode?qrUrl={{resData.otpAuthUrl}}" style="display: block; width: 200px; height: 200px">
+                        </div>
+                    </div>
+
+
+
+
+                    <form role="form" ng-submit="enable2fa()" class="ng-pristine ng-valid">
+                        <div class="row">
+
+
+                            <div class="col-lg-6">
+
+                                <div class="form-group">
+                                    <input type="hidden" name="someData" ng-value="resData.secret" />
+
+                                    <!--
+                                    <input class="form-control" type="text" ng-model="resData.secret">
+                                    -->
+
+                                </div>
+                                <div class="form-group">
+                                    <label>Token</label>
+                                    <input class="form-control" placeholder="Enter text" ng-model="resData.token">
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- /.row (nested) -->
+                        <div class="row">
+                            <div class="col-lg-6 text-right" style="margin-top:15px">
+                                <button type="submit" class="btn btn-default">Enable 2FA</button>
+                            </div>
+                        </div>
+                    </form>
+
+
+
+                </div>
+                <div ng-if="resData.active2fa">
+
+                   <label>2FA Is enabled</label>
+                    <div class="row-lg-4">
+                        <BR><BR><BR>
+                        </div>
+
+                    <form role="form" ng-submit="verifyToken()" class="ng-pristine ng-valid">
+                        <div class="row">
+
+
+                            <div class="col-lg-6">
+
+                                <div class="form-group">
+                                    <label>Token</label>
+                                    <input class="form-control" placeholder="Enter token" ng-model="resData.token">
+                                </div>
+
+                            </div>
+                        </div>
+
+                        <!-- /.row (nested) -->
+                        <div class="row">
+                            <div class="col-lg-6 text-right" style="margin-top:15px">
+                                <button type="submit" class="btn btn-default">Verify token</button>
+                            </div>
+                                <div class="col-lg-6 text-left" style="margin-top:15px">
+                                    <button type="button" class="btn btn-default" ng-click="disable2fa()">Disable 2FA</button>
+                                </div>
+                        </div>
+                    </form>
+
+
+                </div>
+                <!-- /.panel-body -->
+            </div>
+            </div>
+            <!-- /.panel -->
+        </div>
+    </div>
+    <!-- /.row -->
+</div>
