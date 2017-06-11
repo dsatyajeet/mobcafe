@@ -13,6 +13,7 @@ exports.endBack_MC = function ( err, result, req, res) {
 
 exports.alexaEndBack = function ( err, successMessage, req, res) {
     if (err) {
+        console.log('error shown by alexaEndBack: '+err);
         res.status=500;
         res.json({message:'Sorry, something went wrong.'});
     }
