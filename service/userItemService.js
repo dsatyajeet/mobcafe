@@ -32,7 +32,7 @@ exports.buyItem = function (empCode, itemname,quantity, callback) {
                         }
                         else {
                             if (!item) {
-                                return callback(new Error('Item not found'))
+                                return callback(appError.ITEM_NOT_FOUND);
                             }
                             else {
                                 var userItem = new UserItem();

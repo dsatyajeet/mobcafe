@@ -133,24 +133,30 @@ exports.authenticateUser_MC = function (token, callback) {
     });
 };
 
-exports.authenticateBy2FA = function (empCode,twoFAPin, callback) {
-    exports.getUserByEmpCode(empCode,function(err,user){
-        if(err){
+exports.authenticateBy2FA = function (empCode, twoFAPin, callback) {
+    exports.getUserByEmpCode(empCode, function (err, user) {
+        if (err) {
             return callback(err);
         }
-        else{
-            if(!user.text2fa){
-                return callback(9001);
-            }
-            else{
-                var isValidUser=exports.verifyToken(user.text2fa,twoFAPin);
-                if(isValidUser || true){
-                    return callback(null,user);
-                }
-                else{
-                    return callback(401);
-                }
+        else {
 
+            if (!user) {
+                return callback(appError.USER_CODE_NOT_FOUND);
+            }
+            else {
+                if (!user.text2fa) {
+                    return callback(appError.TWO_FA_NOT_ENABLED);// 2 fa not enabled
+                }
+                else {
+                    var isValidUser = exports.verifyToken(user.text2fa, twoFAPin);
+                    if (isValidUser) {
+                        return callback(null, user);//token verified user detected
+                    }
+                    else {
+                        return callback(appError.TWO_FA_AUTH_FAILED);//token verification failed
+                    }
+
+                }
             }
         }
     });
@@ -163,7 +169,7 @@ exports.authoriseUser_MC = function (userId, roles, callback) {
         match: {"name": {"$in": roles}}
     }).exec(function (err, userRoles) {
         if (!(userRoles && userRoles.roles && userRoles.roles.length > 0)) {
-            return callback(new Error('Access denied'));
+            return callback(appError.ACCESS_DENIED);
         }
         else {
             return callback();
@@ -179,22 +185,22 @@ exports.add_MC = function (username, password, email, empCode, firstname, lastna
 };
 
 
-exports.register = function (password, email, empCode, firstname, lastname, mobile, confirmPassword,callback) {
-        if (password != confirmPassword) {
-            return callback(new Error('Password -confirm password not match.'))
-        } else {
-            RoleService.getRoles(['Customer'],function(err,roles){
-                if(err){
-                    return callback(err);
-                }
-                else{
-                    addUser_local(email, password, email, empCode, firstname, lastname, mobile,roles,callback);
-                }
-            });
-        }
+exports.register = function (password, email, empCode, firstname, lastname, mobile, confirmPassword, callback) {
+    if (password != confirmPassword) {
+        return callback(new Error('Password -confirm password not match.'))
+    } else {
+        RoleService.getRoles(['Customer'], function (err, roles) {
+            if (err) {
+                return callback(err);
+            }
+            else {
+                addUser_local(email, password, email, empCode, firstname, lastname, mobile, roles, callback);
+            }
+        });
+    }
 };
 
-exports.update2 = function (id, username, email, empCode, firstname, lastname, mobile, roleArray,callback) {
+exports.update2 = function (id, username, email, empCode, firstname, lastname, mobile, roleArray, callback) {
     RoleService.getRoles(roleArray, function (err, roles) {
         if (err) {
             return callback(err);
@@ -249,49 +255,42 @@ exports.getUserByEmpCode = function (empCode, callback) {
             return callback(err);
         }
         else {
-            if (!user) {
-                return callback(new Error('User not found'));
-            }
-            else {
-                return callback(null, user);
-            }
+            return callback(null, user);
         }
     });
 };
 
 
-
-exports.authGoogleUser = function (password, email, empCode, firstname, lastname, mobile,callback) {
-    getUserByName_local_MC(email,function(err,existingUser){
-        if(err){
+exports.authGoogleUser = function (password, email, empCode, firstname, lastname, mobile, callback) {
+    getUserByName_local_MC(email, function (err, existingUser) {
+        if (err) {
             return callback(err);
         }
-        else{
-            if(!existingUser){
-                RoleService.getRoles(['Customer'],function(err,roles){
-                    if(err){
+        else {
+            if (!existingUser) {
+                RoleService.getRoles(['Customer'], function (err, roles) {
+                    if (err) {
                         return callback(err);
                     }
-                    else{
-                        addUser_local(email, password, email, empCode, firstname, lastname, mobile,roles,function(err,user){
-                            if(err){
+                    else {
+                        addUser_local(email, password, email, empCode, firstname, lastname, mobile, roles, function (err, user) {
+                            if (err) {
                                 return callback(err);
                             }
-                            else{
-                                getOrGenerateAccessToken_local_MC(user._id,callback);
+                            else {
+                                getOrGenerateAccessToken_local_MC(user._id, callback);
                             }
                         });
                     }
                 });
 
             }
-            else{
-                getOrGenerateAccessToken_local_MC(existingUser._id,callback);
+            else {
+                getOrGenerateAccessToken_local_MC(existingUser._id, callback);
             }
         }
     });
 };
-
 
 
 function addUser_local(username, password, email, empCode, firstName, lastName, mobile, roles, callback) {
@@ -363,7 +362,7 @@ function getUserByName_local(callback, context, username) {
 
 }
 
-function getUserByName_local_MC(username,callback) {
+function getUserByName_local_MC(username, callback) {
     User.findOne({username: username}).populate('roles').exec(callback);
 
 }
@@ -393,7 +392,7 @@ function getOrGenerateAccessToken_local(callback, context, userId) {
 }
 
 
-function getOrGenerateAccessToken_local_MC(userId,callback) {
+function getOrGenerateAccessToken_local_MC(userId, callback) {
     AccessToken.findOne({userId: userId}, function (err, existingToken) {
         if (err) {
             return callback(err);
@@ -408,8 +407,8 @@ function getOrGenerateAccessToken_local_MC(userId,callback) {
                 if (err) {
                     return callback(err);
                 }
-                else{
-                    return callback(null,accessToken);
+                else {
+                    return callback(null, accessToken);
                 }
             });
         }
