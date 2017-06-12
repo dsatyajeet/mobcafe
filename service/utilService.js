@@ -13,9 +13,15 @@ exports.endBack_MC = function ( err, result, req, res) {
 
 exports.alexaEndBack = function ( err, successMessage, req, res) {
     if (err) {
-        console.log('error shown by alexaEndBack: '+err);
-        res.status=500;
-        res.json({message:'Sorry, something went wrong.'});
+        console.log('error found: '+JSON.stringify(err));
+        if(err.errorCode){
+            res.status=500;
+            res.json(err);
+        }
+        else{
+            res.status=500;
+            res.json(appError.RUNTIME_ERROR);
+        }
     }
     else {
         res.status=200;
@@ -75,9 +81,6 @@ exports.alexa_authoriseUser=function(roles){
     return function(req,res,next){
         userService.authoriseUser_MC(req.user._id,roles,function(err){
             if (err) {
-                if(err.message && err.message=='Access denied'){
-                       err=403;
-                }
                 alexaError(err,req,res);
             }
             else {
@@ -96,27 +99,16 @@ function renderError(err, req, res, next) {
 }
 
 function alexaError(err, req, res, next) {
-    console.log('custom error..alex' + err);
-    var message='Unknown error';
-    var errorCode=500;
-    if((err==401)||(err==403)||(err==9001)){
-        errorCode=err;
-        switch(err){
-            case 401:{
-                message='Authentication failed, Please try again.';
-                break;
-            }
-            case 403:{
-                message='You are not authorised to get these details';
-                break;
-            }
-            case 9001:{
-                message='Please enable 2 factor authentication from the portal.';
-                break;
-            }
-        }
+    console.log('custom error..alexa ' + JSON.stringify(err));
+    if(err.errorCode){
+        res.status(500);
+        res.json(err);
     }
-    res.status(500);
-    res.json({errorCode:errorCode,errorMessage: message});
+    else{
+        var message='Unknown error';
+        var errorCode=500;
+        res.status(500);
+        res.json({errorCode:errorCode,message: message});
+    }
 }
 

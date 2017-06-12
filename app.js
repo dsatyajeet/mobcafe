@@ -1,4 +1,5 @@
 global.envConf = require('./config.js');
+global.appError =require('./resources/errorCodes');
 var express = require('express');
 var path = require('path');
 var favicon = require('serve-favicon');
